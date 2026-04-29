@@ -31,7 +31,7 @@ function App() {
 
   // 1. GET: Cargar los datos desde tu API real en Node/MongoDB
   useEffect(() => {
-    fetch('http://localhost:3000/api/contacts')
+    fetch('http://127.0.0.1:3000/api/contacts')
       .then(res => res.json())
       .then(data => {
         // Adaptamos los datos de Mongo para que React use _id como id
@@ -51,7 +51,7 @@ function App() {
   // 2. POST: Enviar datos del Formulario a la Base de Datos
   const agregarRegistro = async (nuevoUsuario) => {
     try {
-      const respuesta = await fetch('http://localhost:3000/api/contacts', {
+      const respuesta = await fetch('http://127.0.0.1:3000/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(nuevoUsuario)
@@ -69,29 +69,33 @@ function App() {
     }
   };
 
-  // 3. PUT: Enviar datos actualizados desde el Modal de Edición
+// 3. PUT: Enviar datos actualizados desde el Modal de Edición
   const actualizarRegistro = async (id, datosActualizados) => {
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/contacts/${id}`, {
+      // TRUCO CLAVE: Separamos el _id interno para NO enviarlo a Mongo y evitar el error de campo inmutable
+      const { _id, id: reactId, __v, ...datosLimpios } = datosActualizados;
+
+      const respuesta = await fetch(`http://127.0.0.1:3000/api/contacts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datosActualizados)
+        body: JSON.stringify(datosLimpios) // Solo enviamos nombre, apellido, celular, correo, dni
       });
 
       if (respuesta.ok) {
         const dataActualizada = await respuesta.json();
-        // Actualizamos la tarjeta en la pantalla sin recargar la página
         setRegistros(registros.map(r => r.id === id ? { ...dataActualizada, id: dataActualizada._id } : r));
+        return true; // Le avisamos a la tarjeta que fue un éxito
       }
+      return false; // Falló el servidor
     } catch (error) {
       console.error('Error al actualizar en BD:', error);
+      return false;
     }
   };
-
   // 4. DELETE: Eliminar un registro de la Base de Datos
   const eliminarRegistro = async (id) => {
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/contacts/${id}`, {
+      const respuesta = await fetch(`http://127.0.0.1:3000/api/contacts/${id}`, {
         method: 'DELETE'
       });
 

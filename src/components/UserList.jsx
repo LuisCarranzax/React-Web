@@ -4,39 +4,132 @@ import toast from 'react-hot-toast';
 export default function UserList({ datos = [], loading, onActualizar, onEliminar }) {
   const [busqueda, setBusqueda] = useState('');
   const [editando, setEditando] = useState(null);
+  
+  const [erroresEdicion, setErroresEdicion] = useState({
+    nombre: false, apellido: false, celular: false, correo: false, dni: false
+  });
 
-  // 1. FILTRADO BLINDADO: Convertimos todo a texto de forma segura
-  const datosFiltrados = datos.filter(persona => {
-    const dniSeguro = String(persona?.dni || ''); // Si no hay DNI, usa texto vacío
+  // 🛡️ FILTRO ANTIMUERTE: Eliminamos cualquier 'fantasma' o 'null' antes de que React intente leerlo
+  const datosLimpios = Array.isArray(datos) ? datos.filter(p => p !== null && p !== undefined) : [];
+
+  const datosFiltrados = datosLimpios.filter(persona => {
+    const dniSeguro = String(persona?.dni || '');
     return dniSeguro.includes(busqueda);
   });
 
   const manejarClickTarjeta = (persona) => {
+    if (!persona) return; // Evitamos abrir tarjetas vacías
     setEditando(persona);
+    setErroresEdicion({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
+  };
+
+  const manejarCambioEdicion = (e) => {
+    setEditando({ ...editando, [e.target.name]: e.target.value });
+    setErroresEdicion({ ...erroresEdicion, [e.target.name]: false });
   };
 
   const manejarActualizacion = (e) => {
     e.preventDefault();
-    if (window.confirm('¿Estás seguro de guardar estos cambios?')) {
-      onActualizar(editando.id, editando);
-      toast.success('Registro actualizado correctamente', { icon: '✏️' });
-      setEditando(null);
+    if (!editando) return;
+
+    const nuevosErrores = {
+      nombre: String(editando?.nombre || '').trim() === '',
+      apellido: String(editando?.apellido || '').trim() === '',
+      correo: String(editando?.correo || '').trim() === '',
+      celular: String(editando?.celular || '').trim() === '',
+      dni: String(editando?.dni || '').trim() === ''
+    };
+
+    setErroresEdicion(nuevosErrores);
+
+    if (Object.values(nuevosErrores).includes(true)) {
+      toast.error('Por favor, completa los campos marcados en rojo para actualizar.');
+      return;
     }
+
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center', padding: '10px' }}>
+        <span style={{ fontWeight: 'bold', textAlign: 'center', color: '#1e293b' }}>
+          ¿Confirmas los cambios para {editando?.nombre}?
+        </span>
+        
+        <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+          <button 
+            className="btn" 
+            style={{ flex: 1, backgroundColor: '#10b981', padding: '8px', fontSize: '14px' }} 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              const toastId = toast.loading('Actualizando en MongoDB...');
+              
+              // 🛡️ Extraemos el ID de forma ultra segura
+              const idSeguro = editando?.id || editando?._id;
+              const exito = await onActualizar(idSeguro, editando);
+
+              if (exito) {
+                toast.success('Registro actualizado correctamente', { id: toastId, icon: '✏️' });
+                setEditando(null);
+              } else {
+                toast.error('Error al actualizar. Verifica el servidor.', { id: toastId });
+              }
+            }}
+          >
+            ✅ Sí, actualizar
+          </button>
+          
+          <button 
+            className="btn" 
+            style={{ flex: 1, backgroundColor: '#cbd5e1', color: '#333', padding: '8px', fontSize: '14px' }} 
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity, position: 'top-center', style: { border: '1px solid #10b981', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.2)' }});
   };
 
   const manejarEliminacion = () => {
-    if (window.confirm(`¿Estás seguro de eliminar a ${editando?.nombre}?`)) {
-      onEliminar(editando.id);
-      toast.error('Registro eliminado', { icon: '🗑️' });
-      setEditando(null);
-    }
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center', padding: '10px' }}>
+        <span style={{ fontWeight: 'bold', textAlign: 'center', color: '#1e293b' }}>
+          ¿Seguro que deseas eliminar a {editando?.nombre}? <br/>
+          <small style={{ color: '#ef4444', fontWeight: 'normal' }}>Esta acción no se puede deshacer.</small>
+        </span>
+        
+        <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+          <button 
+            className="btn" 
+            style={{ flex: 1, backgroundColor: '#ef4444', padding: '8px', fontSize: '14px' }} 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              const idSeguro = editando?.id || editando?._id;
+              await onEliminar(idSeguro);
+              toast.success('Registro eliminado', { icon: '🗑️' });
+              setEditando(null);
+            }}
+          >
+            Sí, eliminar
+          </button>
+          
+          <button 
+            className="btn" 
+            style={{ flex: 1, backgroundColor: '#cbd5e1', color: '#333', padding: '8px', fontSize: '14px' }} 
+            onClick={() => toast.dismiss(t.id)} 
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity, position: 'top-center', style: { border: '1px solid #ef4444', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.2)' }});
   };
 
-// ... (todo tu código de arriba se queda igual)
+  const estiloError = (campo) => ({
+    border: erroresEdicion[campo] ? '2px solid #ef4444' : '',
+    backgroundColor: erroresEdicion[campo] ? '#fef2f2' : ''
+  });
 
   return (
-    <> {/* 👈 1. Agregamos este Fragmento (etiqueta vacía) al inicio */}
-      
+    <> 
       <div className="page-transition">
         <div style={{ marginBottom: '20px' }}>
           <h2>Directorio Registrado</h2>
@@ -60,13 +153,15 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
           </div>
         ) : (
           <div className="grid-container">
-            {datosFiltrados.map((persona) => {
+            {datosFiltrados.map((persona, index) => {
+              // 🛡️ Lectura segura de datos para pintar la tarjeta
               const inicialNombre = persona?.nombre ? String(persona.nombre).charAt(0).toUpperCase() : '👤';
               const inicialApellido = persona?.apellido ? String(persona.apellido).charAt(0).toUpperCase() : '';
 
               return (
                 <div 
-                  key={persona.id || Math.random()} 
+                  // 🛡️ Llave segura: Si no hay ID, usa el índice temporalmente
+                  key={persona?._id || persona?.id || index} 
                   className="product-card" 
                   onClick={() => manejarClickTarjeta(persona)}
                   style={{ cursor: 'pointer' }}
@@ -92,9 +187,9 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
             })}
           </div>
         )}
-      </div> {/* 👈 2. Cerramos el div de page-transition AQUÍ */}
+      </div> 
 
-      {/* 3. El modal ahora está AFUERA del contenedor animado, por lo que ocupará toda la pantalla */}
+      {/* Modal de Edición Estilizado */}
       {editando && (
         <div className="modal-overlay">
           <div className="card page-transition" style={{ maxWidth: '500px', width: '100%', margin: '0 auto', position: 'relative' }}>
@@ -102,17 +197,17 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
             
             <form onSubmit={manejarActualizacion} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                <input type="text" className="input-field" value={editando?.nombre || ''} onChange={(e) => setEditando({...editando, nombre: e.target.value})} required />
-                <input type="text" className="input-field" value={editando?.apellido || ''} onChange={(e) => setEditando({...editando, apellido: e.target.value})} required />
+                <input type="text" name="nombre" className="input-field" value={editando?.nombre || ''} onChange={manejarCambioEdicion} style={estiloError('nombre')} />
+                <input type="text" name="apellido" className="input-field" value={editando?.apellido || ''} onChange={manejarCambioEdicion} style={estiloError('apellido')} />
               </div>
-              <input type="email" className="input-field" value={editando?.correo || ''} onChange={(e) => setEditando({...editando, correo: e.target.value})} required />
+              <input type="email" name="correo" className="input-field" value={editando?.correo || ''} onChange={manejarCambioEdicion} style={estiloError('correo')} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                <input type="number" className="input-field" value={editando?.celular || ''} onChange={(e) => setEditando({...editando, celular: e.target.value})} required />
-                <input type="number" className="input-field" value={editando?.dni || ''} onChange={(e) => setEditando({...editando, dni: e.target.value})} required />
+                <input type="number" name="celular" className="input-field" value={editando?.celular || ''} onChange={manejarCambioEdicion} style={estiloError('celular')} />
+                <input type="number" name="dni" className="input-field" value={editando?.dni || ''} onChange={manejarCambioEdicion} style={estiloError('dni')} />
               </div>
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }}>💾 Guardar</button>
+                <button type="submit" className="btn" style={{ flex: 1 }}>💾 Guardar Cambios</button>
                 <button type="button" className="btn" onClick={manejarEliminacion} style={{ flex: 1, backgroundColor: '#ef4444' }}>🗑️ Eliminar</button>
                 <button type="button" className="btn" onClick={() => setEditando(null)} style={{ flex: 1, backgroundColor: '#64748b' }}>Cancelar</button>
               </div>
@@ -120,6 +215,6 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
           </div>
         </div>
       )}
-    </> /* 👈 4. Cerramos el Fragmento */
+    </>
   );
 }
