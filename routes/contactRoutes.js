@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Contact = require('../models/Contact');
 
-// GET: Obtener todos los registros
 router.get('/', async (req, res) => {
   try {
     const contacts = await Contact.find();
@@ -12,7 +11,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Crear un nuevo registro
 router.post('/', async (req, res) => {
   try {
     const newContact = new Contact(req.body);
@@ -23,7 +21,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT: Actualizar un registro existente
 router.put('/:id', async (req, res) => {
   try {
     const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -33,7 +30,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE: Eliminar un registro
 router.delete('/:id', async (req, res) => {
   try {
     await Contact.findByIdAndDelete(req.params.id);

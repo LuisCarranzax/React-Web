@@ -6,23 +6,27 @@ export default function UserForm({ onGuardar }) {
     nombre: '', apellido: '', celular: '', correo: '', dni: ''
   });
 
-  const handleSubmit = (e) => {
+  // Agregamos "async" aquí
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación: Comprobar que no haya campos vacíos
     if (!formData.nombre || !formData.apellido || !formData.celular || !formData.correo || !formData.dni) {
       toast.error('Por favor, completa todos los campos.');
       return;
     }
 
-    // Enviamos los datos a App.jsx
-    onGuardar(formData);
+    // Ponemos un toast de carga opcional
+    const toastId = toast.loading('Guardando en MongoDB...');
+
+    // ESPERAMOS a que App.jsx intente guardarlo en la base de datos real
+    const exito = await onGuardar(formData);
     
-    // Mostramos la alerta de éxito
-    toast.success('¡Registro guardado correctamente!', { icon: '✅' });
-    
-    // Limpiamos el formulario
-    setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
+    if (exito) {
+      toast.success('¡Registro guardado correctamente!', { id: toastId, icon: '✅' });
+      setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
+    } else {
+      toast.error('Error: Verifica que tu API en Docker esté encendida.', { id: toastId });
+    }
   };
 
   const handleChange = (e) => {

@@ -23,48 +23,88 @@ const AcercaDe = () => (
   </div>
 );
 
+// ... (Tus importaciones y componentes Inicio/AcercaDe se quedan igual)
+
 function App() {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // GET: Cargar datos de JSONPlaceholder al iniciar
+  // 1. GET: Cargar los datos desde tu API real en Node/MongoDB
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
+    fetch('http://localhost:3000/api/contacts')
       .then(res => res.json())
       .then(data => {
-        // Mapeamos los datos de la API a nuestro formato de formulario
-        const datosAdaptados = data.map(user => {
-          const nombres = user.name.split(' ');
-          return {
-            id: user.id,
-            nombre: nombres[0],
-            apellido: nombres.slice(1).join(' ') || 'Sin apellido',
-            correo: user.email,
-            celular: user.phone.split(' ')[0],
-            // Generamos un DNI simulado de 8 dígitos usando su ID
-            dni: (10000000 + user.id).toString()
-          };
-        });
+        // Adaptamos los datos de Mongo para que React use _id como id
+        const datosAdaptados = data.map(user => ({
+          ...user,
+          id: user._id 
+        }));
         setRegistros(datosAdaptados);
         setLoading(false);
       })
-      .catch(err => console.error("Error al cargar API", err));
+      .catch(err => {
+        console.error("Error al cargar la API local:", err);
+        setLoading(false);
+      });
   }, []);
 
-  // POST: Agregar
-  const agregarRegistro = (nuevoUsuario) => {
-    setRegistros([{ ...nuevoUsuario, id: Date.now() }, ...registros]);
+  // 2. POST: Enviar datos del Formulario a la Base de Datos
+  const agregarRegistro = async (nuevoUsuario) => {
+    try {
+      const respuesta = await fetch('http://localhost:3000/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoUsuario)
+      });
+      
+      if (respuesta.ok) {
+        const dataGuardada = await respuesta.json();
+        setRegistros([{ ...dataGuardada, id: dataGuardada._id }, ...registros]);
+        return true; // ¡Exito! Le avisamos al formulario
+      }
+      return false; // Falló el servidor
+    } catch (error) {
+      console.error('Error al guardar en BD:', error);
+      return false; // Falló la conexión (Docker apagado)
+    }
   };
 
-  // PUT: Actualizar
-  const actualizarRegistro = (id, datosActualizados) => {
-    setRegistros(registros.map(r => r.id === id ? { ...r, ...datosActualizados } : r));
+  // 3. PUT: Enviar datos actualizados desde el Modal de Edición
+  const actualizarRegistro = async (id, datosActualizados) => {
+    try {
+      const respuesta = await fetch(`http://localhost:3000/api/contacts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosActualizados)
+      });
+
+      if (respuesta.ok) {
+        const dataActualizada = await respuesta.json();
+        // Actualizamos la tarjeta en la pantalla sin recargar la página
+        setRegistros(registros.map(r => r.id === id ? { ...dataActualizada, id: dataActualizada._id } : r));
+      }
+    } catch (error) {
+      console.error('Error al actualizar en BD:', error);
+    }
   };
 
-  // DELETE: Eliminar
-  const eliminarRegistro = (id) => {
-    setRegistros(registros.filter(r => r.id !== id));
+  // 4. DELETE: Eliminar un registro de la Base de Datos
+  const eliminarRegistro = async (id) => {
+    try {
+      const respuesta = await fetch(`http://localhost:3000/api/contacts/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (respuesta.ok) {
+        // Lo borramos de la pantalla
+        setRegistros(registros.filter(r => r.id !== id));
+      }
+    } catch (error) {
+      console.error('Error al eliminar en BD:', error);
+    }
   };
+
+  // ... (El resto del return <Router> se queda exactamente igual)
 
   return (
     <Router>
