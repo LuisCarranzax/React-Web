@@ -33,6 +33,7 @@ export default function UserForm({ onGuardar }) {
     
     if (exito) {
       toast.success('¡Registro guardado correctamente!', { id: toastId });
+      limpiarFormulario();
     } else {
       toast.error('Error: Verifica tu servidor.', { id: toastId });
     }
@@ -47,6 +48,11 @@ export default function UserForm({ onGuardar }) {
     border: errores[campo] ? '2px solid #ef4444' : '',
     backgroundColor: errores[campo] ? '#fef2f2' : ''
   });
+
+  const limpiarFormulario = () => {
+    setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
+    setErrores({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
+  };
 
   return (
     <div className="card page-transition">
