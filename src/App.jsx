@@ -13,12 +13,8 @@ const Inicio = () => (
       <h1>Bienvenido a Inicio</h1>
     </div>
     <TaskList />
-    <Preguntas />
+    <Questions />
   </div>
-);
-
-const Preguntas = () => (
-  <Questions />
 );
 
 

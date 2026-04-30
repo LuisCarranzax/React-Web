@@ -64,7 +64,7 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
               const exito = await onActualizar(idSeguro, editando);
 
               if (exito) {
-                toast.success('Registro actualizado correctamente', { id: toastId, icon: '✏️' });
+                toast.success('Registro actualizado correctamente', { id: toastId });
                 setEditando(null);
               } else {
                 toast.error('Error al actualizar. Verifica el servidor.', { id: toastId });

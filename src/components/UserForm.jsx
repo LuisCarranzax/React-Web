@@ -32,9 +32,7 @@ export default function UserForm({ onGuardar }) {
     const exito = await onGuardar(formData);
     
     if (exito) {
-      toast.success('¡Registro guardado correctamente!', { id: toastId, icon: '✅' });
-      setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
-      setErrores({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
+      toast.success('¡Registro guardado correctamente!', { id: toastId });
     } else {
       toast.error('Error: Verifica tu servidor.', { id: toastId });
     }
