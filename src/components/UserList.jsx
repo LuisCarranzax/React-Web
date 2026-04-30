@@ -136,7 +136,7 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
           <input 
             type="number" 
             className="input-field" 
-            placeholder="🔍 Buscar por DNI..." 
+            placeholder="Buscar por DNI..." 
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             style={{ maxWidth: '300px', marginTop: '10px' }}
