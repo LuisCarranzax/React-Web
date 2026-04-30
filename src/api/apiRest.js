@@ -5,10 +5,10 @@ const API_URL = 'http://127.0.0.1:3000/api/contacts';
 export const obtenerTodos = async () => {
   try {
     const respuesta = await fetch(API_URL);
-    return await respuesta.json(); // Devolvemos los datos puros
+    return await respuesta.json(); 
   } catch (error) {
     console.error('Error al obtener datos:', error);
-    return []; // Si falla, devolvemos un arreglo vacío
+    return []; 
   }
 };
 
@@ -22,7 +22,7 @@ export const crearNuevo = async (datosFormulario) => {
     });
     
     if (respuesta.ok) {
-      return await respuesta.json(); // Devolvemos el usuario creado con su ID
+      return await respuesta.json(); 
     }
     return null;
   } catch (error) {
@@ -34,7 +34,7 @@ export const crearNuevo = async (datosFormulario) => {
 // 3. PUT: Actualizar registro
 export const actualizarExistente = async (id, datosActualizados) => {
   try {
-    // Limpiamos los IDs antes de enviar (como hicimos antes)
+
     const { _id, id: reactId, __v, ...datosLimpios } = datosActualizados;
 
     const respuesta = await fetch(`${API_URL}/${id}`, {
@@ -44,7 +44,7 @@ export const actualizarExistente = async (id, datosActualizados) => {
     });
 
     if (respuesta.ok) {
-      return await respuesta.json(); // Devolvemos los datos nuevos
+      return await respuesta.json(); 
     }
     return null;
   } catch (error) {
@@ -59,7 +59,7 @@ export const eliminarPorId = async (id) => {
     const respuesta = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE'
     });
-    return respuesta.ok; // Devuelve true si se borró bien, false si falló
+    return respuesta.ok; 
   } catch (error) {
     console.error('Error al eliminar:', error);
     return false;
