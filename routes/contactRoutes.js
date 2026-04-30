@@ -18,7 +18,6 @@ router.post('/', async (req, res) => {
     await newContact.save();
     res.status(201).json(newContact);
   } catch (error) {
-    // AHORA EL SERVIDOR IMPRIMIRÁ EL ERROR REAL Y TE LO ENVIARÁ
     console.log("🚨 ERROR EXACTO DE MONGO:", error.message);
     res.status(400).json({ 
       message: 'Error al guardar el registro', 

@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Conexión a MongoDB (host.docker.internal conecta el contenedor de Docker con tu PC local)
+// Conexión a MongoDB 
 mongoose.connect('mongodb://host.docker.internal:27017/contactsDB')
   .then(() => console.log('¡Conectado a MongoDB exitosamente!'))
   .catch(err => console.error('Error al conectar a MongoDB:', err));

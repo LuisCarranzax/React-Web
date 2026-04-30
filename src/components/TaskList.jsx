@@ -33,7 +33,7 @@ export default function TaskList() {
     <div className="card">
       <h2>Lista de Tareas</h2>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      <form onSubmit={handleSubmit} className="task-form">
         <input
           type="text"
           className="input-field"

@@ -5,16 +5,23 @@ import TaskList from './components/TaskList';
 import UserForm from './components/UserForm';
 import UserList from './components/UserList';
 import './App.css';
+import Questions from './components/Questions';
 
 const Inicio = () => (
   <div className="page-transition">
     <div className="card">
       <h1>Bienvenido a Inicio</h1>
-      <p style={{ color: '#64748b' }}>Desde aquí puedes gestionar el Ejercicio 1.</p>
     </div>
     <TaskList />
+    <Preguntas />
   </div>
 );
+
+const Preguntas = () => (
+  <Questions />
+);
+
+
 
 const AcercaDe = () => (
   <div className="card page-transition">
@@ -23,7 +30,6 @@ const AcercaDe = () => (
   </div>
 );
 
-// ... (Tus importaciones y componentes Inicio/AcercaDe se quedan igual)
 
 function App() {
   const [registros, setRegistros] = useState([]);
@@ -34,7 +40,6 @@ function App() {
     fetch('http://127.0.0.1:3000/api/contacts')
       .then(res => res.json())
       .then(data => {
-        // Adaptamos los datos de Mongo para que React use _id como id
         const datosAdaptados = data.map(user => ({
           ...user,
           id: user._id 
@@ -60,33 +65,32 @@ function App() {
       if (respuesta.ok) {
         const dataGuardada = await respuesta.json();
         setRegistros([{ ...dataGuardada, id: dataGuardada._id }, ...registros]);
-        return true; // ¡Exito! Le avisamos al formulario
+        return true; 
       }
-      return false; // Falló el servidor
+      return false; 
     } catch (error) {
       console.error('Error al guardar en BD:', error);
-      return false; // Falló la conexión (Docker apagado)
+      return false; 
     }
   };
 
 // 3. PUT: Enviar datos actualizados desde el Modal de Edición
   const actualizarRegistro = async (id, datosActualizados) => {
     try {
-      // TRUCO CLAVE: Separamos el _id interno para NO enviarlo a Mongo y evitar el error de campo inmutable
       const { _id, id: reactId, __v, ...datosLimpios } = datosActualizados;
 
       const respuesta = await fetch(`http://127.0.0.1:3000/api/contacts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datosLimpios) // Solo enviamos nombre, apellido, celular, correo, dni
+        body: JSON.stringify(datosLimpios) 
       });
 
       if (respuesta.ok) {
         const dataActualizada = await respuesta.json();
         setRegistros(registros.map(r => r.id === id ? { ...dataActualizada, id: dataActualizada._id } : r));
-        return true; // Le avisamos a la tarjeta que fue un éxito
+        return true; 
       }
-      return false; // Falló el servidor
+      return false; 
     } catch (error) {
       console.error('Error al actualizar en BD:', error);
       return false;
@@ -100,15 +104,12 @@ function App() {
       });
 
       if (respuesta.ok) {
-        // Lo borramos de la pantalla
         setRegistros(registros.filter(r => r.id !== id));
       }
     } catch (error) {
       console.error('Error al eliminar en BD:', error);
     }
   };
-
-  // ... (El resto del return <Router> se queda exactamente igual)
 
   return (
     <Router>

@@ -9,7 +9,6 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
     nombre: false, apellido: false, celular: false, correo: false, dni: false
   });
 
-  // 🛡️ FILTRO ANTIMUERTE: Eliminamos cualquier 'fantasma' o 'null' antes de que React intente leerlo
   const datosLimpios = Array.isArray(datos) ? datos.filter(p => p !== null && p !== undefined) : [];
 
   const datosFiltrados = datosLimpios.filter(persona => {
@@ -18,7 +17,7 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
   });
 
   const manejarClickTarjeta = (persona) => {
-    if (!persona) return; // Evitamos abrir tarjetas vacías
+    if (!persona) return; 
     setEditando(persona);
     setErroresEdicion({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
   };
@@ -61,7 +60,6 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
               toast.dismiss(t.id);
               const toastId = toast.loading('Actualizando en MongoDB...');
               
-              // 🛡️ Extraemos el ID de forma ultra segura
               const idSeguro = editando?.id || editando?._id;
               const exito = await onActualizar(idSeguro, editando);
 
@@ -73,7 +71,7 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
               }
             }}
           >
-            ✅ Sí, actualizar
+            Sí, actualizar
           </button>
           
           <button 
@@ -154,13 +152,11 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
         ) : (
           <div className="grid-container">
             {datosFiltrados.map((persona, index) => {
-              // 🛡️ Lectura segura de datos para pintar la tarjeta
               const inicialNombre = persona?.nombre ? String(persona.nombre).charAt(0).toUpperCase() : '👤';
               const inicialApellido = persona?.apellido ? String(persona.apellido).charAt(0).toUpperCase() : '';
 
               return (
                 <div 
-                  // 🛡️ Llave segura: Si no hay ID, usa el índice temporalmente
                   key={persona?._id || persona?.id || index} 
                   className="product-card" 
                   onClick={() => manejarClickTarjeta(persona)}
@@ -189,26 +185,25 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
         )}
       </div> 
 
-      {/* Modal de Edición Estilizado */}
       {editando && (
         <div className="modal-overlay">
           <div className="card page-transition" style={{ maxWidth: '500px', width: '100%', margin: '0 auto', position: 'relative' }}>
             <h2>Actualizar Registro</h2>
             
-            <form onSubmit={manejarActualizacion} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <form onSubmit={manejarActualizacion} className="form-container">
+              <div className="form-grid">
                 <input type="text" name="nombre" className="input-field" value={editando?.nombre || ''} onChange={manejarCambioEdicion} style={estiloError('nombre')} />
                 <input type="text" name="apellido" className="input-field" value={editando?.apellido || ''} onChange={manejarCambioEdicion} style={estiloError('apellido')} />
               </div>
               <input type="email" name="correo" className="input-field" value={editando?.correo || ''} onChange={manejarCambioEdicion} style={estiloError('correo')} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="form-grid">
                 <input type="number" name="celular" className="input-field" value={editando?.celular || ''} onChange={manejarCambioEdicion} style={estiloError('celular')} />
                 <input type="number" name="dni" className="input-field" value={editando?.dni || ''} onChange={manejarCambioEdicion} style={estiloError('dni')} />
               </div>
               
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="submit" className="btn" style={{ flex: 1 }}>💾 Guardar Cambios</button>
-                <button type="button" className="btn" onClick={manejarEliminacion} style={{ flex: 1, backgroundColor: '#ef4444' }}>🗑️ Eliminar</button>
+              <div className="modal-actions">
+                <button type="submit" className="btn" style={{ flex: 1 }}>Guardar Cambios</button>
+                <button type="button" className="btn" onClick={manejarEliminacion} style={{ flex: 1, backgroundColor: '#ef4444' }}>Eliminar</button>
                 <button type="button" className="btn" onClick={() => setEditando(null)} style={{ flex: 1, backgroundColor: '#64748b' }}>Cancelar</button>
               </div>
             </form>
