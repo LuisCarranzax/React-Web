@@ -61,13 +61,14 @@ export default function UserList({ datos = [], loading, onActualizar, onEliminar
               const toastId = toast.loading('Actualizando en MongoDB...');
               
               const idSeguro = editando?.id || editando?._id;
-              const exito = await onActualizar(idSeguro, editando);
+              
+              const resultado = await onActualizar(idSeguro, editando);
 
-              if (exito) {
+              if (resultado === true) {
                 toast.success('Registro actualizado correctamente', { id: toastId });
                 setEditando(null);
               } else {
-                toast.error('Error al actualizar. Verifica el servidor.', { id: toastId });
+                toast.error(resultado, { id: toastId });
               }
             }}
           >

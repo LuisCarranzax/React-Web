@@ -50,24 +50,33 @@ function App() {
 
   // 2. POST: Enviar datos del Formulario
   const agregarRegistro = async (nuevoUsuario) => {
+
+    if (registros.some(r => String(r.dni) === String(nuevoUsuario.dni))) return "El DNI ya fue registrado.";
+    if (registros.some(r => String(r.correo).toLowerCase() === String(nuevoUsuario.correo).toLowerCase())) return "Alguien ya se registró con este correo. Use otro.";
+    if (registros.some(r => String(r.celular) === String(nuevoUsuario.celular))) return "El número de celular ya está en uso.";
+
     const dataGuardada = await crearNuevo(nuevoUsuario);
-    
     if (dataGuardada) {
       setRegistros([{ ...dataGuardada, id: dataGuardada._id }, ...registros]);
-      return true; 
+      return true; // Éxito
     }
-    return false; 
+    return "Error al conectar con el servidor."; 
   };
 
   // 3. PUT: Enviar datos actualizados
   const actualizarRegistro = async (id, datosActualizados) => {
-    const dataActualizada = await actualizarExistente(id, datosActualizados);
+    const otrosRegistros = registros.filter(r => r.id !== id);
     
+    if (otrosRegistros.some(r => String(r.dni) === String(datosActualizados.dni))) return "El DNI ya fue registrado por otra persona.";
+    if (otrosRegistros.some(r => String(r.correo).toLowerCase() === String(datosActualizados.correo).toLowerCase())) return "Ese correo ya está siendo usado por alguien más.";
+    if (otrosRegistros.some(r => String(r.celular) === String(datosActualizados.celular))) return "El número de celular ya está en uso.";
+
+    const dataActualizada = await actualizarExistente(id, datosActualizados);
     if (dataActualizada) {
       setRegistros(registros.map(r => r.id === id ? { ...dataActualizada, id: dataActualizada._id } : r));
-      return true; 
+      return true; // Éxito
     }
-    return false; 
+    return "Error al conectar con el servidor."; 
   };
 
   // 4. DELETE: Eliminar un registro

@@ -29,13 +29,15 @@ export default function UserForm({ onGuardar }) {
     }
 
     const toastId = toast.loading('Guardando en MongoDB...');
-    const exito = await onGuardar(formData);
     
-    if (exito) {
+    const resultado = await onGuardar(formData);
+    
+    if (resultado === true) {
       toast.success('¡Registro guardado correctamente!', { id: toastId });
-      limpiarFormulario();
+      setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
+      setErrores({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
     } else {
-      toast.error('Error: Verifica tu servidor.', { id: toastId });
+      toast.error(resultado, { id: toastId });
     }
   };
 
