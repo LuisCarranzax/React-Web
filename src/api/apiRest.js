@@ -1,4 +1,3 @@
-// Centralizamos la URL para no repetirla
 const API_URL = 'http://127.0.0.1:3000/api/contacts';
 
 // 1. GET: Obtener todos los registros

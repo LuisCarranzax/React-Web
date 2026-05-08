@@ -36,6 +36,7 @@ export default function UserForm({ onGuardar }) {
       toast.success('¡Registro guardado correctamente!', { id: toastId });
       setFormData({ nombre: '', apellido: '', celular: '', correo: '', dni: '' });
       setErrores({ nombre: false, apellido: false, celular: false, correo: false, dni: false });
+      limpiarFormulario();
     } else {
       toast.error(resultado, { id: toastId });
     }
